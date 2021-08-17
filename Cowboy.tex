@@ -36,20 +36,19 @@ A common schoolyard game proceeds as follows: two players simultaneously choose 
 \section{Playing the Game}
 
 The game begins when the players double-tap their legs with both hands simultaneously. A player signals reload by making a thumbs-up with both hands and by placing his thumbs are over his shoulders. Shoot is signaled by making both hands into finger-guns. A player signals shield by crossing both his arms over his chest, making a giant X. After each move, both players double-tap their legs in sync before displaying their next moves.
-\\
 
 \section{Game States and Notation}
 
 The entire game's context can be described by a tuple of the form $(a, b)$ containing each player's bullet count, which is equal to the number of times a player has reloaded minus the number of times that player has shot. This number is not allowed to drop below zero. How a game arrived at a particular pairing of bullet counts does not affect the game that follows. Therefore, the game describes a Markov process.
 \\
 
-Moreover, the number of states in this process is finite. Bullet counts may not be negative, and the game ends if either player achieves a bullet count of $5$ before the other player. If both players reload in the state $(4, 4)$, the game resets, which brings the state back to $(0, 0)$. Of course, the choice of a maximum bullet count is arbitrary, and the methods described apply to any maximum bullet count. Let variations of this kind be referred to as $n$-bullet-baazooka games where $n$ is the game's maximum bullet count.\footnote{A 2-bullet-bazooka game is equivalent to Rock, Paper, Scissors with a few extra steps. In this game, both players reload on the first move. On the second move, shoot beats reload, reload beats shield, and shield beats shoot (so long as the shielding player remembers to reload on the next move).}
+Moreover, the number of states in this process is finite. Bullet counts may not be negative, and the game ends if either player achieves a bullet count of $5$ before the other player. If both players reload in the state $(4, 4)$, the game resets, which brings the state back to $(0, 0)$. Of course, the choice of a maximum bullet count is arbitrary, and the methods described apply to any maximum bullet count. Let variations of this kind be referred to as $n$-bullet-bazooka games where $n$ is the game's maximum bullet count.\footnote{A 2-bullet-bazooka game is equivalent to Rock, Paper, Scissors with a few extra steps. In this game, both players reload on the first move. On the second move, shoot beats reload, reload beats shield, and shield beats shoot (so long as the shielding player remembers to reload on the next move).}
 \\
 
 Let an \emph{$a$-$b$ count} refer to the game state $(a, b)$ relative to the position of the player with the bullet count of $a$. Let $R_{a,b}$ refer to the probability that a player reloads in an $a$-$b$ count. Let $X_{a,b}$ and $S_{a,b}$ similarly refer to the probabilities of shielding and shooting.
 \\
 
-Finally, let the inverse of a count $(a, b)$ refer to the count $(b, a)$. In other words, if a player has a count $(a, b)$, his opponent has a count $(b, a)$, its inverse. Let a player's strategy consist of the set of values $\{R_{a,b}, X_{a,b}, S_{a,b}\}$ \forall $a, b \in  \llbracket 0, 4 \rrbracket$. 
+Finally, let the inverse of a count $(a, b)$ refer to the count $(b, a)$. In other words, if a player has a count $(a, b)$, his opponent has a count $(b, a)$, its inverse. Let a player's strategy consist of the set of values $\{R_{a,b}, X_{a,b}, S_{a,b}\} \forall a, b \in  \llbracket 0, 4 \rrbracket$. 
 \\
 
 \section{Edge Cases}
@@ -58,10 +57,10 @@ On the first move, optimal play requires that both players reload; there is no n
 
 \section{Solving for Equilibrium}
 
-This game has no pure Nash equilibrium. With knowledge of the other player's moves, a player could always win by reloading or shooting while the other player reloads, by shielding when the other player shoots, and by reloading when the other player shields. However, because the game has only a finite number of pure strategies, the game must have a mixed-strategy Nash equilibrium.
+This game has no pure Nash equilibrium. With knowledge of the other player's moves, a player could always win by reloading or shooting while the other player reloads, by shielding when the other player shoots, and by reloading when the other player shields.
 \\
 
-The game can be in Nash equilibrium only if a player is indifferent between each move given his opponent's strategy. Define $E_{a,b}$ as the expected value of a game in an $a$-$b$ count where 1 is awarded for winning and -1 is awarded for losing. Consider counts in which either player can choose any move.
+When all moves are available to each player, the game can be in Nash equilibrium only if a player is indifferent between each move given his opponent's strategy. Define $E_{a,b}$ as the expected value of a game in an $a$-$b$ count where 1 is awarded for winning and -1 is awarded for losing. Consider counts in which either player can choose any move.
 \\
 
 \begin{center}
@@ -120,6 +119,10 @@ Counting the three expected value variables as one variable (they must all be eq
 \end{center}
 
 \section{Python Code}
+
+The code is also available at https://github.com/gkamer8/cowboy-game.
+
+\fontsize{7}{12}\selectfont
 
 \begin{lstlisting}[language=Python]
 
