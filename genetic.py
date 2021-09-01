@@ -1,6 +1,7 @@
+from typing import KeysView
 import numpy as np
 import random
-from cowboy_sim import double_cpu
+from cowboy_sim import double_cpu, cpu_play
 
 """
 Flow:
@@ -16,7 +17,8 @@ Randomly mate some together (take averages)??
 
 """
 
-def faceoff(cpu1, cpu2):
+# inputting_function is true if cpu1 and cpu2 represent get_move functions rather than CPU objects
+def faceoff(cpu1, cpu2, inputting_function=False):
     cpu1_count = 0
     cpu2_count = 0
     turns = 0
@@ -26,9 +28,12 @@ def faceoff(cpu1, cpu2):
         if turns >= 100:
             return np.random.choice([0, 1])
 
-        cpu1_move = cpu1.get_move(cpu2_count, cpu1_count)
-        cpu2_move = cpu2.get_move(cpu1_count, cpu2_count)
-
+        if not inputting_function:
+            cpu1_move = cpu1.get_move(cpu2_count, cpu1_count)
+            cpu2_move = cpu2.get_move(cpu1_count, cpu2_count)
+        else:
+            cpu1_move = cpu1(cpu2_count, cpu1_count)
+            cpu2_move = cpu2(cpu1_count, cpu2_count)
         # Death
         if cpu1_move == 'R' and cpu2_move == 'S':
             return 1
@@ -109,7 +114,7 @@ class CPU:
         return np.random.choice(['R', 'X', 'S'], p=[self.reload[cpu][player], self.shield[cpu][player], self.shoot[cpu][player]])
 
     # get n cpus representing the next generation
-    def next_gen(self, n, std=.05):
+    def next_gen(self, n, std=.1):
         reloads = [[[0 for _ in range(5)] for _ in range(5)] for _ in range(n)]
         shields = [[[0 for _ in range(5)] for _ in range(5)] for _ in range(n)]
         shoots = [[[0 for _ in range(5)] for _ in range(5)] for _ in range(n)]
@@ -169,45 +174,41 @@ def tournament(cpus, x, rounds=100):
                 round.append(game[0])
     return [round[i] for i in range(x)]
 
-    """
-    Old tournament:
-    results = [0 for _ in range(len(cpus))]
-    for i in range(len(cpus)):
-        cpu = cpus[i]
-        for _ in range(rounds):
-            # note: it's possible for a cpu to play itself and to play other opponents many times
-            oppo = random.randrange(len(cpus))
-            res = faceoff(cpus[oppo], cpu)
-            results[i] += res
-            results[oppo] += 1 if res == 0 else 0
-
-
-    combined = [[cpus[i], results[i]] for i in range(len(results))]
-    combined_sorted = sorted(combined, key=lambda x: x[1], reverse=True)
-    return [combined_sorted[i][0] for i in range(x)]
-    """
-
 
 # Returns list of n random CPU objects
 def get_random_cpus(n):
     return [CPU() for _ in range(n)]
 
+# Now tournament is played_against random CPUs
+def random_tournament(cpus, x, rounds=100):
+    results = [0 for _ in range(len(cpus))]
+    rand_cpus = get_random_cpus(rounds)
+    for i in range(len(cpus)):
+        cpu = cpus[i]
+        for k in range(rounds):
+            res = faceoff(rand_cpus[KeysView], cpu)
+            results[i] += res
+
+    combined = [[cpus[i], results[i]] for i in range(len(results))]
+    combined_sorted = sorted(combined, key=lambda x: x[1], reverse=True)
+    return [combined_sorted[i][0] for i in range(x)]
+
 
 if __name__ == '__main__':
 
     # Generation size
-    n = 256
+    n = 15
     # Top x breed
-    x = 16
+    x = 3
     # Top x each have y offspring
-    y = 16
+    y = 5
     # Iterations
-    iters = 1000
+    iters = 10
 
     cpus = get_random_cpus(n)
     for i in range(iters):
         print(f"Iter: {i + 1}")
-        tops = tournament(cpus, x)
+        tops = random_tournament(cpus, x)
         # Generate next generation
         cpus = []
         for top in tops:
@@ -227,3 +228,10 @@ if __name__ == '__main__':
 
     print("Win Rate of Optimal vs. CPU: ")
     print(double_cpu(cpus[0].get_move, quiet=True))
+
+    print("Win Rate of Optimal vs. Optimal: ")
+    results = []
+    n = 1000
+    for _ in range(n):
+        results.append(faceoff(cpu_play, cpu_play, inputting_function=True))
+    print(sum(results)/n)

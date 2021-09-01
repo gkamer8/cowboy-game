@@ -48,7 +48,7 @@ def play_game(quiet=False, double_cpu=None):
             if not quiet:
                 print("CPU wins!")
             return 1
-        elif move == "S" and cpu_move == "S":
+        elif move == "S" and cpu_move == "R":
             if not quiet:
                 print("Player wins!")
             return 0
