@@ -1,5 +1,9 @@
 import gametheory
+import random
 import numpy as np
+import matplotlib.pyplot as plt
+import math
+import statistics
 
 root, lu = gametheory.solution(talk = False)
 
@@ -23,7 +27,7 @@ def cpu_play(player, cpu):
 
 # Interactive play vs. CPU
 # Returns 0 if player wins, 1 if CPU wins
-# double_cpu is not None if two cpus are playing each other (takes function like cpu_play)
+# double_cpu is not None if two cpus are playing each other (takes function in the form of cpu_play)
 def play_game(quiet=False, double_cpu=None):
     player = 0
     cpu = 0
@@ -82,6 +86,7 @@ def play_game(quiet=False, double_cpu=None):
         if not quiet:
             print("Count: " + str(player) + "-" + str(cpu))
 
+# This strategy performs extremely well!
 def only_reload_cpu(player, cpu):
     return "R"
 
@@ -91,12 +96,28 @@ def reload_shoot_cpu(player, cpu):
         return "S"
     return "R"
 
-# Plays legal moves at random
+# Plays legal moves at random but doesn't shield when opponent has no ammo and reloads at 0, 0
 def random_cpu(player, cpu):
-    if cpu > 0:
+    if cpu > 0 and player > 0:
         return np.random.choice(['R', 'X', 'S'])
+    elif cpu > 0:
+        return np.random.choice(['R', 'S'])
+    elif cpu == 0 and player == 0:
+        return 'R'
     else:
         return np.random.choice(['R', 'X'])
+
+# Reload-heavy mix
+def reload_heavy_cpu(player, cpu):
+    if cpu > 0 and player > 0:
+        return np.random.choice(['R', 'X', 'S'], p=[.8, .1, .1])
+    elif cpu > 0:
+        return np.random.choice(['R', 'S'], p=[.8, .2])
+    elif player > 0:
+        return np.random.choice(['R', 'X'], p=[.8, .2])
+    else:
+        return 'R'
+    
 
 # Returns win rate of optimal CPU
 def double_cpu(cpu_function, games=10000, quiet=False):
@@ -111,6 +132,7 @@ def double_cpu(cpu_function, games=10000, quiet=False):
     return optimal
 
 if __name__ == "__main__":
+
     print("vs. Only Reload: ")
     print(double_cpu(only_reload_cpu, quiet=True))
 
@@ -119,3 +141,26 @@ if __name__ == "__main__":
 
     print("vs. Random: ")
     print(double_cpu(random_cpu, quiet=True))
+
+    print("vs. Reload-Heavy: ")
+    print(double_cpu(reload_heavy_cpu, quiet=True))
+
+    # Statistical test to see if only-reload beats the optimal strategy.
+
+    results = []
+    n = 1000
+    for _ in range(n):
+        res = double_cpu(only_reload_cpu, quiet=True, games=100)
+        results.append(res)
+    plt.hist(results)
+    plt.show()
+    stdev = statistics.stdev(results)
+    # 95 confidence interval: z = 1.96
+    print("Average: " + str(sum(results)/n))
+    z_value = (sum(results)/n - .5)/stdev
+    print("Z-value: " + str(z_value))
+    if z_value < -1.96:
+        print("Null hypothesis rejected.")
+    else:
+        print("Null hypothesis failed to be rejected.")
+    
