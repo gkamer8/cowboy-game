@@ -113,6 +113,12 @@ class CPU:
     def get_move(self, player, cpu):
         return np.random.choice(['R', 'X', 'S'], p=[self.reload[cpu][player], self.shield[cpu][player], self.shoot[cpu][player]])
 
+    def show_probs(self):
+        print("In form (R, X, S)")
+        for cpu in range(5):
+            for player in range(5):
+                print(f"({cpu}, {player}): ({self.reload[cpu][player]}, {self.shield[cpu][player]}, {self.shoot[cpu][player]})")
+
     # get n cpus representing the next generation
     def next_gen(self, n, std=.1):
         reloads = [[[0 for _ in range(5)] for _ in range(5)] for _ in range(n)]
