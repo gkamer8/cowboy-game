@@ -14,7 +14,7 @@ class Reinforced(CPU):
 
     # Win is boolean set to true if it's reinforcing a win
     # Delta = change in choice probability (absolute percentage points)
-    def reinforce(self, win, delta=.02):
+    def reinforce(self, win, delta=.005):
         move_dicts = {'R': self.reload, 'X': self.shield, 'S': self.shoot}
         inverse_dicts = {'R': [self.shield, self.shoot], 'X': [self.reload, self.shoot], 'S': [self.reload, self.shield]}
         for cpu, player, move in self.move_history:
@@ -52,11 +52,14 @@ if __name__ == '__main__':
     CPU2 = Reinforced()
     rounds = 500
     speak = 200
+    results = 0
     for x in range(rounds):
         if x % speak == 0:
             print("Round: " + str(x))
         result = faceoff(CPU1, CPU2)
+        results += result
         CPU2.reinforce(result)
         CPU1.reinforce(not result)
     CPU1.show_probs()
+    print("Win % of CPU2: " + str(round(results / rounds)))
         
