@@ -14,43 +14,36 @@ class Reinforced(CPU):
 
     # Win is boolean set to true if it's reinforcing a win
     # Delta = change in choice probability (absolute percentage points)
-    def reinforce(self, win, delta=.005):
+    def reinforce(self, win, delta=.02):
         move_dicts = {'R': self.reload, 'X': self.shield, 'S': self.shoot}
         inverse_dicts = {'R': [self.shield, self.shoot], 'X': [self.reload, self.shoot], 'S': [self.reload, self.shield]}
         for cpu, player, move in self.move_history:
-            # Note: Never increase or decrease a zero
             if not win:
                 delta *= -1
-            if move_dicts[move][cpu][player] >= 1:
-                continue
-
             move_dicts[move][cpu][player] += delta
-            if move_dicts[move][cpu][player] >= 1:
-                move_dicts[move][cpu][player] = 1
-                inverse_dicts[move][0][cpu][player] = 0
-                inverse_dicts[move][1][cpu][player] = 0
-            elif move_dicts[move][cpu][player] <= 0:
-                move_dicts[move][cpu][player] = 0
-                inverse_dicts[move][0][cpu][player] = inverse_dicts[move][0][cpu][player] / (inverse_dicts[move][0][cpu][player] + inverse_dicts[move][1][cpu][player])
-                inverse_dicts[move][1][cpu][player] = 1 - inverse_dicts[move][0][cpu][player]
-            else:
-                inverse_dicts[move][0][cpu][player] = (1 - move_dicts[move][cpu][player]) * (inverse_dicts[move][0][cpu][player] / (inverse_dicts[move][0][cpu][player] + inverse_dicts[move][1][cpu][player]))
-                inverse_dicts[move][1][cpu][player] = 1 - move_dicts[move][cpu][player] - inverse_dicts[move][0][cpu][player]
-            """
-            adjustment = delta / 2  # Change for other two choices
-            for inv in inverse_dicts[move]:
-                if inv[cpu][player] - adjustment <= 0:
-                    adjustment = delta
-                else:
-                    inv[cpu][player] -= adjustment
+        
+        # Make zero all that should be zero (and all that is negative)
+        for x in range(5):
+            for y in range(5):
+                for mv in move_dicts:
+                    move_dicts[mv][x][y] = max(0, move_dicts[mv][x][y])
+            self.shoot[0][x] = 0
+            self.shield[x][0] = 0
 
-            move_dicts[move][cpu][player] = 1 - inverse_dicts[move][0][cpu][player] - inverse_dicts[move][1][cpu][player]  # Can't go above one
-            """
+        # Normalize to 1
+        for x in range(5):
+            for y in range(5):
+                new_r = self.reload[x][y] / (self.reload[x][y] + self.shoot[x][y] + self.shield[x][y])
+                new_x = self.shield[x][y] / (self.reload[x][y] + self.shoot[x][y] + self.shield[x][y])
+                self.reload[x][y] = new_r
+                self.shield[x][y] = new_x
+                self.shoot[x][y] = max(0, 1 - new_r - new_x)
+        self.move_history = []
 
 if __name__ == '__main__':
     CPU1 = Reinforced()
     CPU2 = Reinforced()
-    rounds = 500
+    rounds = 2000
     speak = 200
     results = 0
     for x in range(rounds):
@@ -61,5 +54,6 @@ if __name__ == '__main__':
         CPU2.reinforce(result)
         CPU1.reinforce(not result)
     CPU1.show_probs()
-    print("Win % of CPU2: " + str(round(results / rounds)))
+    CPU2.show_probs()
+    print("Win % of CPU2: " + str(results / rounds))
         

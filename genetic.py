@@ -34,6 +34,7 @@ def faceoff(cpu1, cpu2, inputting_function=False):
         else:
             cpu1_move = cpu1(cpu2_count, cpu1_count)
             cpu2_move = cpu2(cpu1_count, cpu2_count)
+            
         # Death
         if cpu1_move == 'R' and cpu2_move == 'S':
             return 1
@@ -192,7 +193,7 @@ def random_tournament(cpus, x, rounds=100):
     for i in range(len(cpus)):
         cpu = cpus[i]
         for k in range(rounds):
-            res = faceoff(rand_cpus[KeysView], cpu)
+            res = faceoff(rand_cpus[k], cpu)
             results[i] += res
 
     combined = [[cpus[i], results[i]] for i in range(len(results))]
