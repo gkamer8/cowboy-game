@@ -16,12 +16,15 @@ class Reinforced(CPU):
     # Delta = change in choice probability (absolute percentage points)
     def reinforce(self, win, delta=.02):
         move_dicts = {'R': self.reload, 'X': self.shield, 'S': self.shoot}
-        inverse_dicts = {'R': [self.shield, self.shoot], 'X': [self.reload, self.shoot], 'S': [self.reload, self.shield]}
+        inverse_moves = {'R': [self.shield, self.shoot], 'X': [self.reload, self.shoot], 'S': [self.reload, self.shield]}
+        if not win:
+            delta *= -1
         for cpu, player, move in self.move_history:
-            if not win:
-                delta *= -1
-            move_dicts[move][cpu][player] += delta
-        
+            inverse_moves[move][0][cpu][player] -= delta
+            inverse_moves[move][1][cpu][player] -= delta
+            # print(f"Mv: {move}, CPU: {cpu}, Play: {player}, Del: {delta}, P: {move_dicts[move][cpu][player]}")
+            continue
+
         # Make zero all that should be zero (and all that is negative)
         for x in range(5):
             for y in range(5):
@@ -43,9 +46,10 @@ class Reinforced(CPU):
 if __name__ == '__main__':
     CPU1 = Reinforced()
     CPU2 = Reinforced()
-    rounds = 2000
-    speak = 200
+    rounds = 20_000
+    speak = 1000
     results = 0
+    CPU1.show_probs()
     for x in range(rounds):
         if x % speak == 0:
             print("Round: " + str(x))
